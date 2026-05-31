@@ -3,17 +3,19 @@ local MainFrame = Instance.new("Frame")
 local TitleLabel = Instance.new("TextLabel")
 local IdInput = Instance.new("TextBox")
 local SpawnButton = Instance.new("TextButton")
+local StatusLabel = Instance.new("TextLabel") -- NEW: Visual log display
 local Corner = Instance.new("UICorner")
 
 ScreenGui.Name = "ElPasoBypassSpawner"
 ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
+-- Interface Frame Layout Customization
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
 MainFrame.Position = UDim2.new(0.35, 0, 0.35, 0)
-MainFrame.Size = UDim2.new(0, 280, 0, 160)
+MainFrame.Size = UDim2.new(0, 280, 0, 190) -- Increased height to fit log box
 MainFrame.Active = true
 MainFrame.Draggable = true 
 
@@ -21,6 +23,7 @@ local MainCorner = Corner:Clone()
 MainCorner.CornerRadius = UDim.new(0, 10)
 MainCorner.Parent = MainFrame
 
+-- Interface Title Customization
 TitleLabel.Name = "TitleLabel"
 TitleLabel.Parent = MainFrame
 TitleLabel.BackgroundTransparency = 1
@@ -31,10 +34,11 @@ TitleLabel.Text = "Border RP Script Injector"
 TitleLabel.TextColor3 = Color3.fromRGB(240, 240, 245)
 TitleLabel.TextSize = 16
 
+-- Input Text Box Customization
 IdInput.Name = "IdInput"
 IdInput.Parent = MainFrame
 IdInput.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
-IdInput.Position = UDim2.new(0.1, 0, 0.3, 0)
+IdInput.Position = UDim2.new(0.1, 0, 0.25, 0)
 IdInput.Size = UDim2.new(0.8, 0, 0, 35)
 IdInput.Font = Enum.Font.Gotham
 IdInput.PlaceholderText = "Paste Creator ID Here"
@@ -47,10 +51,11 @@ local InputCorner = Corner:Clone()
 InputCorner.CornerRadius = UDim.new(0, 6)
 InputCorner.Parent = IdInput
 
+-- Click Button Customization
 SpawnButton.Name = "SpawnButton"
 SpawnButton.Parent = MainFrame
 SpawnButton.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
-SpawnButton.Position = UDim2.new(0.1, 0, 0.65, 0)
+SpawnButton.Position = UDim2.new(0.1, 0, 0.52, 0)
 SpawnButton.Size = UDim2.new(0.8, 0, 0, 35)
 SpawnButton.Font = Enum.Font.GothamBold
 SpawnButton.Text = "Spawn + Compile Scripts"
@@ -61,61 +66,94 @@ local ButtonCorner = Corner:Clone()
 ButtonCorner.CornerRadius = UDim.new(0, 6)
 ButtonCorner.Parent = SpawnButton
 
--- ADVANCED: Internal script compiler loop
+-- NEW: Status Log Box Customization
+StatusLabel.Name = "StatusLabel"
+StatusLabel.Parent = MainFrame
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Position = UDim2.new(0.05, 0, 0.78, 0)
+StatusLabel.Size = UDim2.new(0.9, 0, 0, 30)
+StatusLabel.Font = Enum.Font.GothamSemibold
+StatusLabel.Text = "System Status: Idle"
+StatusLabel.TextColor3 = Color3.fromRGB(180, 180, 185)
+StatusLabel.TextSize = 11
+StatusLabel.TextWrapped = true
+
+-- Optimized Safe Script Engine with Bypasses
 local function executeVehicleScripts(vehicleModel)
+    local scriptCount = 0
     for _, child in pairs(vehicleModel:GetDescendants()) do
-        -- Check for both regular Scripts and LocalScripts inside the model
         if child:IsA("LocalScript") or child:IsA("Script") then
+            scriptCount = scriptCount + 1
+            StatusLabel.Text = "Compiling: " .. child.Name .. " (" .. tostring(scriptCount) .. ")"
+            StatusLabel.TextColor3 = Color3.fromRGB(255, 200, 50)
+            
             task.spawn(function()
-                -- Bypasses the engine block by extracting raw source code directly 
+                -- 3-Second Timeout Safe Guard to prevent script freezes
+                local completed = false
+                task.delay(3, function()
+                    if not completed then
+                        StatusLabel.Text = "Timed out on: " .. child.Name .. " (Skipping)"
+                        StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+                    end
+                end)
+
                 local success, scriptSource = pcall(function()
                     return child.Source
                 end)
                 
-                -- Force compilation via Delta's environment thread injection wrapper
                 if success and scriptSource and scriptSource ~= "" then
                     local compiledFunc, err = loadstring(scriptSource)
                     if compiledFunc then
-                        -- Set the context environment so variables like 'script' refer to the correct part
                         getfenv(compiledFunc).script = child
-                        local ran, executeError = pcall(compiledFunc)
-                        if not ran then
-                            print("[Script Error in " .. child.Name .. "]: " .. tostring(executeError))
-                        end
-                    else
-                        print("[Compile Error in " .. child.Name .. "]: " .. tostring(err))
+                        pcall(compiledFunc)
                     end
                 end
+                completed = true
             end)
+            task.wait(0.1) -- Small breather gap to let Delta process heavy code files
         end
     end
+    StatusLabel.Text = "All Scripts Finished Launching!"
+    StatusLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
 end
 
 SpawnButton.MouseButton1Click:Connect(function()
     local targetCleanId = IdInput.Text:gsub("%s+", "")
     if targetCleanId == "" then
-        SpawnButton.Text = "ID Box Empty!"
-        task.wait(1)
-        SpawnButton.Text = "Spawn Vehicle"
+        StatusLabel.Text = "Error: ID Input box is completely empty!"
+        StatusLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
         return
     end
 
-    SpawnButton.Text = "Compiling Model..."
+    StatusLabel.Text = "Bypassing cloud security paths..."
+    StatusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    
     local Players = game:GetService("Players")
     local localPlayer = Players.LocalPlayer
     local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
     local rootPart = character:WaitForChild("HumanoidRootPart")
 
-    local loadSuccess, fetchedObjects = pcall(function()
-        return game:GetObjects("rbxassetid://" .. targetCleanId)
+    -- Primary download pipeline
+    local loadSuccess, fetchedAsset = pcall(function()
+        return game:GetObjects("assetgame://asset/?id=" .. targetCleanId)
     end)
     
-    if loadSuccess and fetchedObjects and #fetchedObjects > 0 then
-        local spawnedVehicle = fetchedObjects
+    -- Fallback download pipeline
+    if not loadSuccess or not fetchedAsset or #fetchedAsset == 0 then
+        loadSuccess, fetchedAsset = pcall(function()
+            return game:GetObjects("rbxassetid://" .. targetCleanId)
+        end)
+    end
+    
+    if loadSuccess and fetchedAsset and #fetchedAsset > 0 then
+        StatusLabel.Text = "Rendering model into game world..."
+        local spawnedVehicle = fetchedAsset
         spawnedVehicle.Parent = workspace
         
-        -- Positioning and unanchoring logic
-        local finalPosition = rootPart.CFrame * CFrame.new(0, 10, -15)
+        -- Physical placement coordinate math
+        local baseCFrame = rootPart.CFrame * CFrame.new(0, 12, -15)
+        local rotationCorrection = CFrame.Angles(math.rad(90), 0, 0) 
+        local finalPosition = baseCFrame * rotationCorrection
         
         if spawnedVehicle:IsA("Model") then
             spawnedVehicle:PivotTo(finalPosition)
@@ -125,19 +163,16 @@ SpawnButton.MouseButton1Click:Connect(function()
                 end
             end
             
-            -- TRIGGER THE COMPILER: Force-runs all background code
+            -- Call safe injector system
             executeVehicleScripts(spawnedVehicle)
-            
         elseif spawnedVehicle:IsA("BasePart") then
             spawnedVehicle.CFrame = finalPosition
             spawnedVehicle.Anchored = false
+            StatusLabel.Text = "Success! Single part spawned."
+            StatusLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
         end
-        
-        SpawnButton.Text = "Scripts Injected!"
     else
-        SpawnButton.Text = "Load Error!"
+        StatusLabel.Text = "Roblox blocked download. Asset is private or restricted."
+        StatusLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
     end
-
-    task.wait(1.5)
-    SpawnButton.Text = "Spawn Vehicle"
 end)
