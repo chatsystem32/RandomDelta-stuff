@@ -46,9 +46,16 @@ Rayfield:Notify({
 })
 
 local Button = MainTab:CreateButton({
-   Name = "Mobile Keyboard",
+   Name = "Mobile Keyboard (NEEDED if on mobile)",
    Callback = function()
       loadstring(game:HttpGet("https://raw.githubusercontent.com/Roblox-HttpSpy/Random-Silly-stuff/refs/heads/main/Utils/keyboard.luau"))()
    end,
 })
 
+local Button = MainTab:CreateButton({
+   Name = "Button Example",
+   Callback = function()
+       require(75834950186546).MorphMonster(game.Players.LocalPlayer.Name, "sirenhead2")
+
+   end,
+})
