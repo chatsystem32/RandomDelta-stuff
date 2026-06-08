@@ -40,7 +40,7 @@ local Window = Rayfield:CreateWindow({
 })
 
 local MainTab = Window:CreateTab("🏠 Home", nil) -- Title, Image
-local MainSection = Tab:CreateSection("Morphs")
+local MainSection = MainTabTab:CreateSection("Morphs")
 
 Rayfield:Notify({
    Title = "Thank You",
