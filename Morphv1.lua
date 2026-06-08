@@ -38,12 +38,9 @@ local Window = Rayfield:CreateWindow({
       Key = {"Hello"} -- List of keys that the system will accept, can be RAW file links (pastebin, github, etc.) or simple strings ("hello", "key22")
    }
 })
-Rayfield:Notify({
-   Title = "Morph UI",
-   Content = "Thank You For Chosing My UI",
-   Duration = 6.5,
-   Image = nil,
-})
+
+local MainTab = Window:CreateTab("🏠 Home", nil) -- Title, Image
+local MainSection = Tab:CreateSection("Morphs")
 
 local Button = Tab:CreateButton({
    Name = "Mobile Keyboard",
