@@ -3,7 +3,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
    Name = "Top 6 NEEDED Morphs v1",
    Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "Loading UI",
+   LoadingTitle = "Loading UI...",
    LoadingSubtitle = "by NotAHacker11294",
    ShowText = "Morph UI", -- for mobile users to unhide Rayfield, change if you'd like
    Theme = "Amethyst", -- Check https://docs.sirius.menu/rayfield/configuration/themes
@@ -42,9 +42,16 @@ local Window = Rayfield:CreateWindow({
 local MainTab = Window:CreateTab("🏠 Home", nil) -- Title, Image
 local MainSection = Tab:CreateSection("Morphs")
 
-local Button = Tab:CreateButton({
+Rayfield:Notify({
+   Title = "Thank You",
+   Content = "For using my Morph UI v1",
+   Duration = 6.5,
+   Image = nil,
+})
+
+local Button = MainTab:CreateButton({
    Name = "Mobile Keyboard",
    Callback = function()
-           loadstring(game:HttpGet("https://raw.githubusercontent.com/Roblox-HttpSpy/Random-Silly-stuff/refs/heads/main/Utils/keyboard.luau"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Roblox-HttpSpy/Random-Silly-stuff/refs/heads/main/Utils/keyboard.luau"))()
    end,
 })
