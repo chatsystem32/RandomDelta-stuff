@@ -53,7 +53,7 @@ local Button = MainTab:CreateButton({
 })
 
 local Button = MainTab:CreateButton({
-   Name = "Button Example",
+   Name = "Siren Head",
    Callback = function()
        require(75834950186546).MorphMonster(game.Players.LocalPlayer.Name, "sirenhead2")
 
